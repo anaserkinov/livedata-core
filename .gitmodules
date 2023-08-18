@@ -1,0 +1,3 @@
+[submodule "livedata-core"]
+	path = livedata-core
+	url = https://github.com/anaserkinov/livedata-core.git
