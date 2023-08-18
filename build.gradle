@@ -4,6 +4,8 @@ plugins {
 }
 
 android {
+    namespace "androidx.lifecycle.livedata.core"
+
     compileSdk 32
 
     defaultConfig {
