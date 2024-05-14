@@ -151,7 +151,7 @@ public abstract class LiveData<T> {
                 initiator = null;
             } else {
                 for (Iterator<Map.Entry<Observer<? super T>, ObserverWrapper>> iterator =
-                        mObservers.iteratorWithAdditions(); iterator.hasNext(); ) {
+                     mObservers.iteratorWithAdditions(); iterator.hasNext(); ) {
                     considerNotify(iterator.next().getValue(), !iterator.hasNext());
                     if (mDispatchInvalidated) {
                         break;
@@ -324,10 +324,11 @@ public abstract class LiveData<T> {
 
     /**
      * Returns the current value.
+     * <p>
      * Note that calling this method on a background thread does not guarantee that the latest
      * value set will be received.
      *
-     * @return the current value
+     * @return the current value or null if {@link #isInitialized()} is false
      */
     @SuppressWarnings("unchecked")
     @Nullable
@@ -337,6 +338,20 @@ public abstract class LiveData<T> {
             return (T) data;
         }
         return null;
+    }
+
+    /**
+     * Returns whether an explicit value has been set on this LiveData. If this returns
+     * <code>true</code>, then the current value can be retrieved from {@link #getValue()}.
+     * <p>
+     * Note that calling this method on a background thread may still result in this method
+     * returning <code>false</code> even if a call to {@link #postValue(Object)} is being
+     * processed.
+     *
+     * @return whether an explicit value has been set on this LiveData
+     */
+    public boolean isInitialized() {
+        return mData != NOT_SET;
     }
 
     int getVersion() {
@@ -410,11 +425,11 @@ public abstract class LiveData<T> {
         }
     }
 
-    private class LifecycleBoundObserver extends ObserverWrapper implements LifecycleEventObserver {
+    class LifecycleBoundObserver extends ObserverWrapper implements LifecycleEventObserver {
         @NonNull
         final LifecycleOwner mOwner;
 
-        public LifecycleBoundObserver(@NonNull LifecycleOwner owner, Observer<? super T> observer) {
+        LifecycleBoundObserver(@NonNull LifecycleOwner owner, Observer<? super T> observer) {
             super(observer);
             mOwner = owner;
         }
@@ -426,7 +441,7 @@ public abstract class LiveData<T> {
 
         @Override
         public void onStateChanged(@NonNull LifecycleOwner source,
-                @NonNull Lifecycle.Event event) {
+                                   @NonNull Lifecycle.Event event) {
             Lifecycle.State currentState = mOwner.getLifecycle().getCurrentState();
             if (currentState == DESTROYED) {
                 removeObserver(mObserver);
@@ -485,7 +500,7 @@ public abstract class LiveData<T> {
 
     private class AlwaysActiveObserver extends ObserverWrapper {
 
-        public AlwaysActiveObserver(Observer<? super T> observer) {
+        AlwaysActiveObserver(Observer<? super T> observer) {
             super(observer);
         }
 
